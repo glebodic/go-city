@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
-
-	//	"crypto/rand"
 
 	"github.com/fogleman/ln/ln"
 )
@@ -115,9 +115,20 @@ func main() {
 	area_max_y := 50.0
 	level_height := 6.0
 
-	var seed = time.Now().UnixNano()
-	rand.Seed(seed)
-	println("Seed = " + strconv.Itoa(int(seed)))
+	var seed int64
+	if len(os.Args[1:]) == 0 {
+		seed = time.Now().UnixNano()
+		println("New seed = " + strconv.Itoa(int(seed)))
+	} else {
+		seedArg := os.Args[1]
+		i, err := strconv.Atoi(seedArg)
+		seed = int64(i)
+		println("Reused seed = " + strconv.Itoa(int(seed)))
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	rand.Seed(int64(seed))
 
 	// This is the building base
 	strippedcube := createStripedCube(ln.Vector{area_min_x, area_min_y, 0}, ln.Vector{area_max_x, area_max_y, level_height}, int((area_max_x-area_min_x)*3))
