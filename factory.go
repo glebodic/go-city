@@ -142,7 +142,7 @@ func main() {
 		center := ln.Vector{0, 0, 30}
 		up := ln.Vector{0, 0, 1} */
 
-	// View from top
+	// A VIEW
 	eye := ln.Vector{-10, -10, 60}
 	center := ln.Vector{20, 20, 20}
 	up := ln.Vector{0, 0, 1}
@@ -158,10 +158,33 @@ func main() {
 	paths := scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
 
 	//	paths := scene.Render(eye, center, up, width, height, 100, 0.1, 100, 0.01)
-	var filename = "out/city" + strconv.Itoa(int(seed))
+	var filename = "out/city" + strconv.Itoa(int(seed)) + "_A"
 
 	paths.WriteToPNG(filename+".png", width, height)
-	paths.WriteToSVG(filename+".svg", width, height)
-	println("Done!")
+	//	paths.WriteToSVG(filename+".svg", width, height)
+	println("A view generated.")
+
+	// B VIEW
+	eye = ln.Vector{-70, -70, 10}
+	center = ln.Vector{0, 0, 40}
+	up = ln.Vector{0, 0, 1}
+
+	// define rendering parameters
+	width = 4096.0  // rendered width
+	height = 4096.0 // rendered height
+	fovy = 60.0     // vertical field of view, degrees
+	znear = 0.1     // near z plane
+	zfar = 100.0    // far z plane
+	step = 0.01     // how finely to chop the paths for visibility testing
+
+	paths = scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
+
+	//	paths := scene.Render(eye, center, up, width, height, 100, 0.1, 100, 0.01)
+	filename = "out/city" + strconv.Itoa(int(seed)) + "_B"
+
+	paths.WriteToPNG(filename+".png", width, height)
+	//paths.WriteToSVG(filename+".svg", width, height)
+	println("B view generated.")
+
 	// paths.Print()
 }
