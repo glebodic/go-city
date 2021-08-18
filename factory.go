@@ -10,6 +10,25 @@ import (
 	"github.com/fogleman/ln/ln"
 )
 
+type Antenna struct {
+	ln.Cube
+	V0 ln.Vector
+}
+
+func (a *Antenna) Paths() ln.Paths {
+	var paths ln.Paths
+	paths = append(paths, ln.Path{{0, 0, 0}, {a.V0.X, a.V0.Y, a.V0.Z}})
+
+	return paths
+}
+
+func createAntenna(top ln.Vector) (c Antenna) {
+
+	cube := ln.Cube{top, top, ln.Box{top, top}}
+	antenna := Antenna{cube, top}
+	return antenna
+}
+
 type StripedCube struct {
 	ln.Cube
 	Stripes int
@@ -104,6 +123,10 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 				buildExtension(scene, ln.Vector{(max.X-min.X)/2 + min.X, min.Y, max.Z}, ln.Vector{max.X, (max.Y-min.Y)/2 + min.Y, max.Z + newHeight})
 			}
 		}
+	} else {
+		if max.Z > 600 {
+			println("Reached max height")
+		}
 	}
 }
 
@@ -113,7 +136,7 @@ func main() {
 	area_min_y := -50.0
 	area_max_x := 50.0
 	area_max_y := 50.0
-	level_height := 6.0
+	level_height := 1.0
 
 	var seed int64
 	if len(os.Args[1:]) == 0 {
@@ -136,6 +159,8 @@ func main() {
 
 	// Now let's build next levels, recursively
 	buildExtension(&scene, ln.Vector{area_min_x, area_min_y, level_height}, ln.Vector{area_max_x, area_max_y, 2 * level_height})
+	//oneLine := createAntenna(ln.Vector{50.0, 50.0, 50.0})
+	//scene.Add(&oneLine)
 
 	//	View from bottom
 	/*	eye := ln.Vector{-40, -40, 0}
@@ -165,8 +190,8 @@ func main() {
 	println("A view generated.")
 
 	// B VIEW
-	eye = ln.Vector{-70, -70, 10}
-	center = ln.Vector{0, 0, 40}
+	eye = ln.Vector{-60, -60, 0}
+	center = ln.Vector{5, 5, 50}
 	up = ln.Vector{0, 0, 1}
 
 	// define rendering parameters
