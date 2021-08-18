@@ -10,6 +10,9 @@ import (
 	"github.com/fogleman/ln/ln"
 )
 
+// Global variable
+var globalHeight float64
+
 type Antenna struct {
 	ln.Cube
 	V0 ln.Vector
@@ -60,6 +63,10 @@ func (c *StripedCube) Paths() ln.Paths {
 		paths = append(paths, ln.Path{{x2, y1, z}, {x2, y2, z}})
 		paths = append(paths, ln.Path{{x1, y1, z}, {x2, y1, z}})
 		paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
+	}
+
+	if z2 > globalHeight {
+		globalHeight = z2
 	}
 
 	return paths
@@ -137,6 +144,7 @@ func main() {
 	area_max_x := 50.0
 	area_max_y := 50.0
 	level_height := 1.0
+	globalHeight = 0
 
 	var seed int64
 	if len(os.Args[1:]) == 0 {
@@ -168,8 +176,8 @@ func main() {
 		up := ln.Vector{0, 0, 1} */
 
 	// A VIEW
-	eye := ln.Vector{-10, -10, 60}
-	center := ln.Vector{20, 20, 20}
+	eye := ln.Vector{-10, -10, globalHeight + 20}
+	center := ln.Vector{25, 25, 20}
 	up := ln.Vector{0, 0, 1}
 
 	// define rendering parameters
@@ -190,8 +198,8 @@ func main() {
 	println("A view generated.")
 
 	// B VIEW
-	eye = ln.Vector{-60, -60, 0}
-	center = ln.Vector{5, 5, 50}
+	eye = ln.Vector{0, 0, globalHeight + 20}
+	center = ln.Vector{0, 0, 0}
 	up = ln.Vector{0, 0, 1}
 
 	// define rendering parameters
@@ -210,6 +218,8 @@ func main() {
 	paths.WriteToPNG(filename+".png", width, height)
 	//paths.WriteToSVG(filename+".svg", width, height)
 	println("B view generated.")
+
+	println("Global model height = " + fmt.Sprintf("%f", globalHeight))
 
 	// paths.Print()
 }
