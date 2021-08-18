@@ -65,10 +65,6 @@ func (c *StripedCube) Paths() ln.Paths {
 		paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
 	}
 
-	if z2 > globalHeight {
-		globalHeight = z2
-	}
-
 	return paths
 }
 
@@ -91,6 +87,9 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 			buildExtension(scene, ln.Vector{min.X, min.Y, min.Z}, ln.Vector{(max.X-min.X)/2 + min.X, (max.Y-min.Y)/2 + min.Y, max.Z})
 		} else {
 			stripedcube := createStripedCube(ln.Vector{min.X, min.Y, min.Z}, ln.Vector{(max.X-min.X)/2 + min.X, (max.Y-min.Y)/2 + min.Y, max.Z}, newNbStripes)
+			if max.Z > globalHeight {
+				globalHeight = max.Z
+			}
 			scene.Add(&stripedcube)
 			if rand.Float32() <= threshold_continuebuilding {
 				newHeight := float64(2.0 + rand.Intn(10))
@@ -102,6 +101,9 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 			buildExtension(scene, ln.Vector{(max.X-min.X)/2 + min.X, (max.Y-min.Y)/2 + min.Y, min.Z}, ln.Vector{max.X, max.Y, max.Z})
 		} else {
 			stripedcube := createStripedCube(ln.Vector{(max.X-min.X)/2 + min.X, (max.Y-min.Y)/2 + min.Y, min.Z}, ln.Vector{max.X, max.Y, max.Z}, newNbStripes)
+			if max.Z > globalHeight {
+				globalHeight = max.Z
+			}
 			scene.Add(&stripedcube)
 			if rand.Float32() <= threshold_continuebuilding {
 				newHeight := float64(2.0 + rand.Intn(10))
@@ -113,6 +115,9 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 			buildExtension(scene, ln.Vector{min.X, (max.Y-min.Y)/2 + min.Y, min.Z}, ln.Vector{(max.X-min.X)/2 + min.X, max.Y, max.Z})
 		} else {
 			stripedcube := createStripedCube(ln.Vector{min.X, (max.Y-min.Y)/2 + min.Y, min.Z}, ln.Vector{(max.X-min.X)/2 + min.X, max.Y, max.Z}, newNbStripes)
+			if max.Z > globalHeight {
+				globalHeight = max.Z
+			}
 			scene.Add(&stripedcube)
 			if rand.Float32() <= threshold_continuebuilding {
 				newHeight := float64(2.0 + rand.Intn(10))
@@ -124,6 +129,9 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 			buildExtension(scene, ln.Vector{(max.X-min.X)/2 + min.X, min.Y, min.Z}, ln.Vector{max.X, (max.Y-min.Y)/2 + min.Y, max.Z})
 		} else {
 			stripedcube := createStripedCube(ln.Vector{(max.X-min.X)/2 + min.X, min.Y, min.Z}, ln.Vector{max.X, (max.Y-min.Y)/2 + min.Y, max.Z}, newNbStripes)
+			if max.Z > globalHeight {
+				globalHeight = max.Z
+			}
 			scene.Add(&stripedcube)
 			if rand.Float32() <= threshold_continuebuilding {
 				newHeight := float64(2.0 + rand.Intn(10))
@@ -170,13 +178,16 @@ func main() {
 	//oneLine := createAntenna(ln.Vector{50.0, 50.0, 50.0})
 	//scene.Add(&oneLine)
 
+	println("Global model height = " + fmt.Sprintf("%f", globalHeight))
+
 	//	View from bottom
 	/*	eye := ln.Vector{-40, -40, 0}
 		center := ln.Vector{0, 0, 30}
 		up := ln.Vector{0, 0, 1} */
 
 	// A VIEW
-	eye := ln.Vector{-10, -10, globalHeight + 20}
+	eye_height := 5.0 + globalHeight
+	eye := ln.Vector{-20, -20, eye_height - 10.0}
 	center := ln.Vector{25, 25, 20}
 	up := ln.Vector{0, 0, 1}
 
@@ -190,7 +201,6 @@ func main() {
 
 	paths := scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
 
-	//	paths := scene.Render(eye, center, up, width, height, 100, 0.1, 100, 0.01)
 	var filename = "out/city" + strconv.Itoa(int(seed)) + "_A"
 
 	paths.WriteToPNG(filename+".png", width, height)
@@ -198,8 +208,10 @@ func main() {
 	println("A view generated.")
 
 	// B VIEW
-	eye = ln.Vector{0, 0, globalHeight + 20}
-	center = ln.Vector{0, 0, 0}
+	eye_height = 5.0 + globalHeight
+	println("B global height=", eye_height)
+	eye = ln.Vector{-5, -5, eye_height}
+	center = ln.Vector{0, 0, 10}
 	up = ln.Vector{0, 0, 1}
 
 	// define rendering parameters
@@ -218,8 +230,6 @@ func main() {
 	paths.WriteToPNG(filename+".png", width, height)
 	//paths.WriteToSVG(filename+".svg", width, height)
 	println("B view generated.")
-
-	println("Global model height = " + fmt.Sprintf("%f", globalHeight))
 
 	// paths.Print()
 }
