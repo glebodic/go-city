@@ -187,8 +187,8 @@ func main() {
 
 	// A VIEW
 	eye_height := 5.0 + globalHeight
-	eye := ln.Vector{-20, -20, eye_height - 10.0}
-	center := ln.Vector{25, 25, 20}
+	eye := ln.Vector{-20, -20, eye_height - 20.0}
+	center := ln.Vector{50, 50, 10}
 	up := ln.Vector{0, 0, 1}
 
 	// define rendering parameters
@@ -209,7 +209,6 @@ func main() {
 
 	// B VIEW
 	eye_height = 5.0 + globalHeight
-	println("B global height=", eye_height)
 	eye = ln.Vector{-5, -5, eye_height}
 	center = ln.Vector{0, 0, 10}
 	up = ln.Vector{0, 0, 1}
