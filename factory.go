@@ -1,3 +1,5 @@
+// Copyright (c) 2021 Gwenaël LE BODIC
+
 package main
 
 import (
