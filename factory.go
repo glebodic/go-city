@@ -12,6 +12,11 @@ import (
 	"github.com/fogleman/ln/ln"
 )
 
+func FloatToString(input_num float64) string {
+	// to convert a float number to a string
+	return strconv.FormatFloat(input_num, 'f', 0, 64)
+}
+
 // Global variable
 var globalHeight float64
 
@@ -188,14 +193,14 @@ func main() {
 		up := ln.Vector{0, 0, 1} */
 
 	// A VIEW
-	eye_height := 5.0 + globalHeight
-	eye := ln.Vector{-20, -20, eye_height - 20.0}
+	eye_height := globalHeight
+	eye := ln.Vector{-20, -20, eye_height}
 	center := ln.Vector{50, 50, 10}
 	up := ln.Vector{0, 0, 1}
 
 	// define rendering parameters
-	width := 4096.0  // rendered width
-	height := 4096.0 // rendered height
+	width := 1024.0  // rendered width
+	height := 1024.0 // rendered height
 	fovy := 60.0     // vertical field of view, degrees
 	znear := 0.1     // near z plane
 	zfar := 100.0    // far z plane
@@ -203,10 +208,10 @@ func main() {
 
 	paths := scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
 
-	var filename = "out/city" + strconv.Itoa(int(seed)) + "_A"
+	var filename = "out2/city" + strconv.Itoa(int(seed)) + "_" + FloatToString(eye.X) + "_" + FloatToString(eye.Y) + "_" + FloatToString(eye.Z) + "_" + FloatToString(center.X) + "_" + FloatToString(center.Y) + "_" + FloatToString(center.Z) + "_" + FloatToString(width) + "_" + FloatToString(height) + "_A"
 
 	paths.WriteToPNG(filename+".png", width, height)
-	//	paths.WriteToSVG(filename+".svg", width, height)
+	paths.WriteToSVG(filename+".svg", width, height)
 	println("A view generated.")
 
 	// B VIEW
@@ -216,8 +221,8 @@ func main() {
 	up = ln.Vector{0, 0, 1}
 
 	// define rendering parameters
-	width = 4096.0  // rendered width
-	height = 4096.0 // rendered height
+	width = 1024.0  // rendered width
+	height = 1024.0 // rendered height
 	fovy = 60.0     // vertical field of view, degrees
 	znear = 0.1     // near z plane
 	zfar = 100.0    // far z plane
@@ -226,10 +231,10 @@ func main() {
 	paths = scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
 
 	//	paths := scene.Render(eye, center, up, width, height, 100, 0.1, 100, 0.01)
-	filename = "out/city" + strconv.Itoa(int(seed)) + "_B"
+	filename = "out2/city" + strconv.Itoa(int(seed)) + "_" + FloatToString(eye.X) + "_" + FloatToString(eye.Y) + "_" + FloatToString(eye.Z) + "_" + FloatToString(center.X) + "_" + FloatToString(center.Y) + "_" + FloatToString(center.Z) + "_" + FloatToString(width) + "_" + FloatToString(height) + "_B"
 
 	paths.WriteToPNG(filename+".png", width, height)
-	//paths.WriteToSVG(filename+".svg", width, height)
+	paths.WriteToSVG(filename+".svg", width, height)
 	println("B view generated.")
 
 	// paths.Print()
