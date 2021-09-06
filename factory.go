@@ -49,30 +49,114 @@ func (c *StripedCube) Paths() ln.Paths {
 	x1, y1, z1 := c.Min.X, c.Min.Y, c.Min.Z
 	x2, y2, z2 := c.Max.X, c.Max.Y, c.Max.Z
 
+	/*
+		// vertical strips
+		for i := 0; i <= c.Stripes; i++ {
+			p := float64(i) / float64(c.Stripes)
+			x := x1 + (x2-x1)*p
+			y := y1 + (y2-y1)*p
+			paths = append(paths, ln.Path{{x, y1, z1}, {x, y1, z2}})
+			paths = append(paths, ln.Path{{x, y2, z1}, {x, y2, z2}}) // Vertical North
+			paths = append(paths, ln.Path{{x1, y, z1}, {x1, y, z2}})
+			paths = append(paths, ln.Path{{x2, y, z1}, {x2, y, z2}}) // Vertical North
+		}
+
+		// horizontal strips
+
+		var nbVstrips = int((z2 - z1) / 2 * 4)
+		for i := 0; i <= nbVstrips; i++ {
+			p := float64(i) / float64(nbVstrips)
+			z := z1 + (z2-z1)*p
+			paths = append(paths, ln.Path{{x1, y1, z}, {x1, y2, z}})
+			paths = append(paths, ln.Path{{x2, y1, z}, {x2, y2, z}})
+			paths = append(paths, ln.Path{{x1, y1, z}, {x2, y1, z}})
+			paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
+		}
+
+		return paths
+	*/
 	// vertical strips
+	beam_size := 0.03
+	//	println("stripes=" + fmt.Sprintf("%i", c.Stripes))
 	for i := 0; i <= c.Stripes; i++ {
 		p := float64(i) / float64(c.Stripes)
 		x := x1 + (x2-x1)*p
 		y := y1 + (y2-y1)*p
-		paths = append(paths, ln.Path{{x, y1, z1}, {x, y1, z2}})
-		paths = append(paths, ln.Path{{x, y2, z1}, {x, y2, z2}}) // Vertical North
-		paths = append(paths, ln.Path{{x1, y, z1}, {x1, y, z2}})
-		paths = append(paths, ln.Path{{x2, y, z1}, {x2, y, z2}}) // Vertical North
+
+		if i == 0 || i == c.Stripes { // no beam / edges
+			paths = append(paths, ln.Path{{x, y1, z1}, {x, y1, z2}})
+			paths = append(paths, ln.Path{{x, y2, z1}, {x, y2, z2}}) // Vertical North 1
+			paths = append(paths, ln.Path{{x1, y, z1}, {x1, y, z2}})
+			paths = append(paths, ln.Path{{x2, y, z1}, {x2, y, z2}}) // Vertical North
+		} else { // inner beam
+			paths = append(paths, ln.Path{{x - beam_size, y1, z1}, {x - beam_size, y1, z2}})
+			paths = append(paths, ln.Path{{x + beam_size, y1, z1}, {x + beam_size, y1, z2}})
+
+			paths = append(paths, ln.Path{{x - beam_size, y2, z1}, {x - beam_size, y2, z2}}) // Vertical North 1
+			paths = append(paths, ln.Path{{x + beam_size, y2, z1}, {x + beam_size, y2, z2}}) // Vertical North 2
+
+			paths = append(paths, ln.Path{{x1, y - beam_size, z1}, {x1, y - beam_size, z2}})
+			paths = append(paths, ln.Path{{x1, y + beam_size, z1}, {x1, y + beam_size, z2}})
+
+			paths = append(paths, ln.Path{{x2, y - beam_size, z1}, {x2, y - beam_size, z2}}) // Vertical North
+			paths = append(paths, ln.Path{{x2, y + beam_size, z1}, {x2, y + beam_size, z2}}) // Vertical North
+
+		}
+
 	}
 
 	// horizontal strips
 
 	var nbVstrips = int((z2 - z1) / 2 * 4)
+	gap_length := float64(x2-x1) / float64(c.Stripes)
 	for i := 0; i <= nbVstrips; i++ {
 		p := float64(i) / float64(nbVstrips)
 		z := z1 + (z2-z1)*p
-		paths = append(paths, ln.Path{{x1, y1, z}, {x1, y2, z}})
-		paths = append(paths, ln.Path{{x2, y1, z}, {x2, y2, z}})
-		paths = append(paths, ln.Path{{x1, y1, z}, {x2, y1, z}})
-		paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
+
+		if i == 0 || i == nbVstrips {
+			paths = append(paths, ln.Path{{x1, y1, z}, {x1, y2, z}})
+			paths = append(paths, ln.Path{{x2, y1, z}, {x2, y2, z}})
+			paths = append(paths, ln.Path{{x1, y1, z}, {x2, y1, z}})
+			paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
+		} else {
+
+			paths = append(paths, ln.Path{{x1, y1, z}, {x1, y1 + gap_length - beam_size, z}})
+			paths = append(paths, ln.Path{{x1, y2 - gap_length + beam_size, z}, {x1, y2, z}})
+			for i := 1; i <= c.Stripes-1; i++ {
+				p := float64(i) / float64(c.Stripes)
+				y := y1 + (y2-y1)*p
+				paths = append(paths, ln.Path{{x1, y + beam_size, z}, {x1, y + gap_length - beam_size, z}})
+			}
+
+			paths = append(paths, ln.Path{{x2, y1, z}, {x2, y1 + gap_length - beam_size, z}})
+			paths = append(paths, ln.Path{{x2, y2 - gap_length + beam_size, z}, {x2, y2, z}})
+			for i := 1; i <= c.Stripes-1; i++ {
+				p := float64(i) / float64(c.Stripes)
+				y := y1 + (y2-y1)*p
+				paths = append(paths, ln.Path{{x2, y + beam_size, z}, {x2, y + gap_length - beam_size, z}})
+			}
+
+			paths = append(paths, ln.Path{{x1, y1, z}, {x1 + gap_length - beam_size, y1, z}})
+			paths = append(paths, ln.Path{{x2 - gap_length + beam_size, y1, z}, {x2, y1, z}})
+			for i := 1; i <= c.Stripes-1; i++ {
+				p := float64(i) / float64(c.Stripes)
+				x := x1 + (x2-x1)*p
+				paths = append(paths, ln.Path{{x + beam_size, y1, z}, {x + gap_length - beam_size, y1, z}})
+			}
+
+			//paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
+			paths = append(paths, ln.Path{{x1, y2, z}, {x1 + gap_length - beam_size, y2, z}})
+			paths = append(paths, ln.Path{{x2 - gap_length + beam_size, y2, z}, {x2, y2, z}})
+			for i := 1; i <= c.Stripes-1; i++ {
+				p := float64(i) / float64(c.Stripes)
+				x := x1 + (x2-x1)*p
+				paths = append(paths, ln.Path{{x + beam_size, y2, z}, {x + gap_length - beam_size, y2, z}})
+			}
+		}
 	}
 
 	return paths
+
 }
 
 func createStripedCube(min ln.Vector, max ln.Vector, nbStripes int) (c StripedCube) {
@@ -204,7 +288,7 @@ func main() {
 	fovy := 60.0     // vertical field of view, degrees
 	znear := 0.1     // near z plane
 	zfar := 100.0    // far z plane
-	step := 0.005    // how finely to chop the paths for visibility testing
+	step := 0.01     // how finely to chop the paths for visibility testing
 
 	start := time.Now()
 
@@ -231,7 +315,7 @@ func main() {
 	fovy = 60.0     // vertical field of view, degrees
 	znear = 0.1     // near z plane
 	zfar = 100.0    // far z plane
-	step = 0.005    // how finely to chop the paths for visibility testing
+	step = 0.01     // how finely to chop the paths for visibility testing
 
 	start = time.Now()
 	paths = scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
