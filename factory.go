@@ -55,9 +55,9 @@ func (c *StripedCube) Paths() ln.Paths {
 		x := x1 + (x2-x1)*p
 		y := y1 + (y2-y1)*p
 		paths = append(paths, ln.Path{{x, y1, z1}, {x, y1, z2}})
-		paths = append(paths, ln.Path{{x, y2, z1}, {x, y2, z2}})
+		paths = append(paths, ln.Path{{x, y2, z1}, {x, y2, z2}}) // Vertical North
 		paths = append(paths, ln.Path{{x1, y, z1}, {x1, y, z2}})
-		paths = append(paths, ln.Path{{x2, y, z1}, {x2, y, z2}})
+		paths = append(paths, ln.Path{{x2, y, z1}, {x2, y, z2}}) // Vertical North
 	}
 
 	// horizontal strips
@@ -193,18 +193,20 @@ func main() {
 		up := ln.Vector{0, 0, 1} */
 
 	// A VIEW
-	eye_height := globalHeight
+	eye_height := globalHeight + 2
 	eye := ln.Vector{-20, -20, eye_height}
-	center := ln.Vector{50, 50, 10}
+	center := ln.Vector{45, 45, 5}
 	up := ln.Vector{0, 0, 1}
 
 	// define rendering parameters
-	width := 1024.0  // rendered width
-	height := 1024.0 // rendered height
+	width := 800.0   // rendered width
+	height := 1600.0 // rendered height
 	fovy := 60.0     // vertical field of view, degrees
 	znear := 0.1     // near z plane
 	zfar := 100.0    // far z plane
-	step := 0.01     // how finely to chop the paths for visibility testing
+	step := 0.005    // how finely to chop the paths for visibility testing
+
+	start := time.Now()
 
 	paths := scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
 
@@ -212,7 +214,10 @@ func main() {
 
 	paths.WriteToPNG(filename+".png", width, height)
 	paths.WriteToSVG(filename+".svg", width, height)
+	elapsed := time.Since(start)
+
 	println("A view generated.")
+	println("Duration=" + elapsed.String())
 
 	// B VIEW
 	eye_height = 5.0 + globalHeight
@@ -226,8 +231,9 @@ func main() {
 	fovy = 60.0     // vertical field of view, degrees
 	znear = 0.1     // near z plane
 	zfar = 100.0    // far z plane
-	step = 0.01     // how finely to chop the paths for visibility testing
+	step = 0.005    // how finely to chop the paths for visibility testing
 
+	start = time.Now()
 	paths = scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
 
 	//	paths := scene.Render(eye, center, up, width, height, 100, 0.1, 100, 0.01)
@@ -235,7 +241,9 @@ func main() {
 
 	paths.WriteToPNG(filename+".png", width, height)
 	paths.WriteToSVG(filename+".svg", width, height)
-	println("B view generated.")
 
-	// paths.Print()
+	elapsed = time.Since(start)
+	println("B view generated.")
+	println("Duration=" + elapsed.String())
+
 }
