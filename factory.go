@@ -49,7 +49,10 @@ func (c *StripedCube) Paths() ln.Paths {
 	x1, y1, z1 := c.Min.X, c.Min.Y, c.Min.Z
 	x2, y2, z2 := c.Max.X, c.Max.Y, c.Max.Z
 
-	/*
+	texture_selection := float32(0.5)
+
+	if rand.Float32() <= texture_selection {
+
 		// vertical strips
 		for i := 0; i <= c.Stripes; i++ {
 			p := float64(i) / float64(c.Stripes)
@@ -74,95 +77,120 @@ func (c *StripedCube) Paths() ln.Paths {
 		}
 
 		return paths
-	*/
-	// vertical strips
-	beam_size := 0.03
-	//	println("stripes=" + fmt.Sprintf("%i", c.Stripes))
-	for i := 0; i <= c.Stripes; i++ {
-		p := float64(i) / float64(c.Stripes)
-		x := x1 + (x2-x1)*p
-		y := y1 + (y2-y1)*p
+	} else {
 
-		if i == 0 || i == c.Stripes { // no beam / edges
-			paths = append(paths, ln.Path{{x, y1, z1}, {x, y1, z2}})
-			paths = append(paths, ln.Path{{x, y2, z1}, {x, y2, z2}}) // Vertical North 1
-			paths = append(paths, ln.Path{{x1, y, z1}, {x1, y, z2}})
-			paths = append(paths, ln.Path{{x2, y, z1}, {x2, y, z2}}) // Vertical North
-		} else { // inner beam
-			paths = append(paths, ln.Path{{x - beam_size, y1, z1}, {x - beam_size, y1, z2}})
-			paths = append(paths, ln.Path{{x + beam_size, y1, z1}, {x + beam_size, y1, z2}})
+		// vertical strips
+		beam_size := 0.03
+		//	println("stripes=" + fmt.Sprintf("%i", c.Stripes))
+		for i := 0; i <= c.Stripes; i++ {
+			p := float64(i) / float64(c.Stripes)
+			x := x1 + (x2-x1)*p
+			y := y1 + (y2-y1)*p
 
-			paths = append(paths, ln.Path{{x - beam_size, y2, z1}, {x - beam_size, y2, z2}}) // Vertical North 1
-			paths = append(paths, ln.Path{{x + beam_size, y2, z1}, {x + beam_size, y2, z2}}) // Vertical North 2
+			if i == 0 || i == c.Stripes { // no beam / edges
+				paths = append(paths, ln.Path{{x, y1, z1}, {x, y1, z2}})
+				paths = append(paths, ln.Path{{x, y2, z1}, {x, y2, z2}}) // Vertical North 1
+				paths = append(paths, ln.Path{{x1, y, z1}, {x1, y, z2}})
+				paths = append(paths, ln.Path{{x2, y, z1}, {x2, y, z2}}) // Vertical North
+			} else { // inner beam
+				paths = append(paths, ln.Path{{x - beam_size, y1, z1}, {x - beam_size, y1, z2}})
+				paths = append(paths, ln.Path{{x + beam_size, y1, z1}, {x + beam_size, y1, z2}})
 
-			paths = append(paths, ln.Path{{x1, y - beam_size, z1}, {x1, y - beam_size, z2}})
-			paths = append(paths, ln.Path{{x1, y + beam_size, z1}, {x1, y + beam_size, z2}})
+				paths = append(paths, ln.Path{{x - beam_size, y2, z1}, {x - beam_size, y2, z2}}) // Vertical North 1
+				paths = append(paths, ln.Path{{x + beam_size, y2, z1}, {x + beam_size, y2, z2}}) // Vertical North 2
 
-			paths = append(paths, ln.Path{{x2, y - beam_size, z1}, {x2, y - beam_size, z2}}) // Vertical North
-			paths = append(paths, ln.Path{{x2, y + beam_size, z1}, {x2, y + beam_size, z2}}) // Vertical North
+				paths = append(paths, ln.Path{{x1, y - beam_size, z1}, {x1, y - beam_size, z2}})
+				paths = append(paths, ln.Path{{x1, y + beam_size, z1}, {x1, y + beam_size, z2}})
+
+				paths = append(paths, ln.Path{{x2, y - beam_size, z1}, {x2, y - beam_size, z2}}) // Vertical North
+				paths = append(paths, ln.Path{{x2, y + beam_size, z1}, {x2, y + beam_size, z2}}) // Vertical North
+
+			}
 
 		}
 
-	}
+		// horizontal strips
 
-	// horizontal strips
+		var nbVstrips = int((z2 - z1) / 2 * 4)
+		gap_length := float64(x2-x1) / float64(c.Stripes)
+		for i := 0; i <= nbVstrips; i++ {
+			p := float64(i) / float64(nbVstrips)
+			z := z1 + (z2-z1)*p
 
-	var nbVstrips = int((z2 - z1) / 2 * 4)
-	gap_length := float64(x2-x1) / float64(c.Stripes)
-	for i := 0; i <= nbVstrips; i++ {
-		p := float64(i) / float64(nbVstrips)
-		z := z1 + (z2-z1)*p
+			if i == 0 || i == nbVstrips {
+				paths = append(paths, ln.Path{{x1, y1, z}, {x1, y2, z}})
+				paths = append(paths, ln.Path{{x2, y1, z}, {x2, y2, z}})
+				paths = append(paths, ln.Path{{x1, y1, z}, {x2, y1, z}})
+				paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
+			} else {
 
-		if i == 0 || i == nbVstrips {
-			paths = append(paths, ln.Path{{x1, y1, z}, {x1, y2, z}})
-			paths = append(paths, ln.Path{{x2, y1, z}, {x2, y2, z}})
-			paths = append(paths, ln.Path{{x1, y1, z}, {x2, y1, z}})
-			paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
-		} else {
+				paths = append(paths, ln.Path{{x1, y1, z}, {x1, y1 + gap_length - beam_size, z}})
+				paths = append(paths, ln.Path{{x1, y2 - gap_length + beam_size, z}, {x1, y2, z}})
+				for i := 1; i <= c.Stripes-1; i++ {
+					p := float64(i) / float64(c.Stripes)
+					y := y1 + (y2-y1)*p
+					paths = append(paths, ln.Path{{x1, y + beam_size, z}, {x1, y + gap_length - beam_size, z}})
+				}
 
-			paths = append(paths, ln.Path{{x1, y1, z}, {x1, y1 + gap_length - beam_size, z}})
-			paths = append(paths, ln.Path{{x1, y2 - gap_length + beam_size, z}, {x1, y2, z}})
-			for i := 1; i <= c.Stripes-1; i++ {
-				p := float64(i) / float64(c.Stripes)
-				y := y1 + (y2-y1)*p
-				paths = append(paths, ln.Path{{x1, y + beam_size, z}, {x1, y + gap_length - beam_size, z}})
-			}
+				paths = append(paths, ln.Path{{x2, y1, z}, {x2, y1 + gap_length - beam_size, z}})
+				paths = append(paths, ln.Path{{x2, y2 - gap_length + beam_size, z}, {x2, y2, z}})
+				for i := 1; i <= c.Stripes-1; i++ {
+					p := float64(i) / float64(c.Stripes)
+					y := y1 + (y2-y1)*p
+					paths = append(paths, ln.Path{{x2, y + beam_size, z}, {x2, y + gap_length - beam_size, z}})
+				}
 
-			paths = append(paths, ln.Path{{x2, y1, z}, {x2, y1 + gap_length - beam_size, z}})
-			paths = append(paths, ln.Path{{x2, y2 - gap_length + beam_size, z}, {x2, y2, z}})
-			for i := 1; i <= c.Stripes-1; i++ {
-				p := float64(i) / float64(c.Stripes)
-				y := y1 + (y2-y1)*p
-				paths = append(paths, ln.Path{{x2, y + beam_size, z}, {x2, y + gap_length - beam_size, z}})
-			}
+				paths = append(paths, ln.Path{{x1, y1, z}, {x1 + gap_length - beam_size, y1, z}})
+				paths = append(paths, ln.Path{{x2 - gap_length + beam_size, y1, z}, {x2, y1, z}})
+				for i := 1; i <= c.Stripes-1; i++ {
+					p := float64(i) / float64(c.Stripes)
+					x := x1 + (x2-x1)*p
+					paths = append(paths, ln.Path{{x + beam_size, y1, z}, {x + gap_length - beam_size, y1, z}})
+				}
 
-			paths = append(paths, ln.Path{{x1, y1, z}, {x1 + gap_length - beam_size, y1, z}})
-			paths = append(paths, ln.Path{{x2 - gap_length + beam_size, y1, z}, {x2, y1, z}})
-			for i := 1; i <= c.Stripes-1; i++ {
-				p := float64(i) / float64(c.Stripes)
-				x := x1 + (x2-x1)*p
-				paths = append(paths, ln.Path{{x + beam_size, y1, z}, {x + gap_length - beam_size, y1, z}})
-			}
-
-			//paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
-			paths = append(paths, ln.Path{{x1, y2, z}, {x1 + gap_length - beam_size, y2, z}})
-			paths = append(paths, ln.Path{{x2 - gap_length + beam_size, y2, z}, {x2, y2, z}})
-			for i := 1; i <= c.Stripes-1; i++ {
-				p := float64(i) / float64(c.Stripes)
-				x := x1 + (x2-x1)*p
-				paths = append(paths, ln.Path{{x + beam_size, y2, z}, {x + gap_length - beam_size, y2, z}})
+				//paths = append(paths, ln.Path{{x1, y2, z}, {x2, y2, z}})
+				paths = append(paths, ln.Path{{x1, y2, z}, {x1 + gap_length - beam_size, y2, z}})
+				paths = append(paths, ln.Path{{x2 - gap_length + beam_size, y2, z}, {x2, y2, z}})
+				for i := 1; i <= c.Stripes-1; i++ {
+					p := float64(i) / float64(c.Stripes)
+					x := x1 + (x2-x1)*p
+					paths = append(paths, ln.Path{{x + beam_size, y2, z}, {x + gap_length - beam_size, y2, z}})
+				}
 			}
 		}
+
+		return paths
+
 	}
-
-	return paths
-
 }
 
 func createStripedCube(min ln.Vector, max ln.Vector, nbStripes int) (c StripedCube) {
 	cube := ln.Cube{min, max, ln.Box{min, max}}
 	stripedcube := StripedCube{cube, nbStripes}
 	return stripedcube
+}
+
+func buildRooftop(scene *ln.Scene, min ln.Vector, max ln.Vector) {
+	rt_height := 0.05 // was 0.05
+	//	rt_width := 0.05
+	antenna_height := 0.3
+	antenna_radius := 0.05
+
+	scene.Add(ln.NewCube(min, ln.Vector{max.X, max.Y, max.Z + rt_height}))
+
+	/*
+		shape := ln.NewDifference(
+			ln.NewCube(min, ln.Vector{max.X, max.Y, max.Z + rt_height}),
+			ln.NewCube(ln.Vector{min.X + rt_width, min.Y + rt_width, min.Z}, ln.Vector{max.X - rt_width, max.Y - rt_width, max.Z + rt_height}),
+		)
+		scene.Add(shape)
+	*/
+	// Build antenna
+
+	scene.Add(ln.NewTransformedShape(ln.NewCylinder(antenna_radius, 0, antenna_height), ln.Translate(ln.Vector{(max.X-min.X)/2.0 + min.X, (max.Y-min.Y)/2.0 + min.Y, max.Z + rt_height})))
+
+	// scene.Add(ln.Path{min, max})
+	// scene.Add(ln.Path{{(max.X-min.X)/2.0+min.X, (max.Y-min.Y)/2.0+min.Y, max.Z + rt_height}, {max.X-min.X)/2+min.X, (max.Y-min.Y)/2.0+min.Y, max.Z + rt_height+antenna_height}})
 }
 
 func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
@@ -185,6 +213,9 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 			if rand.Float32() <= threshold_continuebuilding {
 				newHeight := float64(2.0 + rand.Intn(10))
 				buildExtension(scene, ln.Vector{min.X, min.Y, max.Z}, ln.Vector{(max.X-min.X)/2 + min.X, (max.Y-min.Y)/2 + min.Y, max.Z + newHeight})
+			} else {
+				// build roof top
+				buildRooftop(scene, ln.Vector{min.X, min.Y, max.Z}, ln.Vector{(max.X-min.X)/2 + min.X, (max.Y-min.Y)/2 + min.Y, max.Z})
 			}
 		}
 
@@ -199,6 +230,9 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 			if rand.Float32() <= threshold_continuebuilding {
 				newHeight := float64(2.0 + rand.Intn(10))
 				buildExtension(scene, ln.Vector{(max.X-min.X)/2 + min.X, (max.Y-min.Y)/2 + min.Y, max.Z}, ln.Vector{max.X, max.Y, max.Z + newHeight})
+			} else {
+				// build roof top
+				buildRooftop(scene, ln.Vector{(max.X-min.X)/2 + min.X, (max.Y-min.Y)/2 + min.Y, max.Z}, ln.Vector{max.X, max.Y, max.Z})
 			}
 		}
 
@@ -213,6 +247,9 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 			if rand.Float32() <= threshold_continuebuilding {
 				newHeight := float64(2.0 + rand.Intn(10))
 				buildExtension(scene, ln.Vector{min.X, (max.Y-min.Y)/2 + min.Y, max.Z}, ln.Vector{(max.X-min.X)/2 + min.X, max.Y, max.Z + newHeight})
+			} else {
+				// build roof top
+				buildRooftop(scene, ln.Vector{min.X, (max.Y-min.Y)/2 + min.Y, max.Z}, ln.Vector{(max.X-min.X)/2 + min.X, max.Y, max.Z})
 			}
 		}
 
@@ -227,12 +264,16 @@ func buildExtension(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 			if rand.Float32() <= threshold_continuebuilding {
 				newHeight := float64(2.0 + rand.Intn(10))
 				buildExtension(scene, ln.Vector{(max.X-min.X)/2 + min.X, min.Y, max.Z}, ln.Vector{max.X, (max.Y-min.Y)/2 + min.Y, max.Z + newHeight})
+			} else {
+				// build roof top
+				buildRooftop(scene, ln.Vector{(max.X-min.X)/2 + min.X, min.Y, max.Z}, ln.Vector{max.X, (max.Y-min.Y)/2 + min.Y, max.Z})
 			}
 		}
 	} else {
 		if max.Z > 600 {
 			println("Reached max height")
 		}
+		buildRooftop(scene, min, ln.Vector{max.X, max.Y, min.Z})
 	}
 }
 
