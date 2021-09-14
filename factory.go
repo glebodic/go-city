@@ -17,8 +17,11 @@ func FloatToString(input_num float64) string {
 	return strconv.FormatFloat(input_num, 'f', 0, 64)
 }
 
-// Global variable
+// Global variables
 var globalHeight float64
+
+var globalNbRooftops int
+var globalNbBlocks int
 
 type Antenna struct {
 	ln.Cube
@@ -167,16 +170,16 @@ func (c *StripedCube) Paths() ln.Paths {
 func createStripedCube(min ln.Vector, max ln.Vector, nbStripes int) (c StripedCube) {
 	cube := ln.Cube{min, max, ln.Box{min, max}}
 	stripedcube := StripedCube{cube, nbStripes}
+	globalNbBlocks = globalNbBlocks + 1
 	return stripedcube
 }
 
 func buildRooftop(scene *ln.Scene, min ln.Vector, max ln.Vector) {
-	rt_height := 0.05 // was 0.05
+	rt_height := 0.1 // was 0.05
 	//	rt_width := 0.05
-	antenna_height := 0.3
-	antenna_radius := 0.05
 
 	scene.Add(ln.NewCube(min, ln.Vector{max.X, max.Y, max.Z + rt_height}))
+	globalNbRooftops = globalNbRooftops + 1
 
 	/*
 		shape := ln.NewDifference(
@@ -185,9 +188,17 @@ func buildRooftop(scene *ln.Scene, min ln.Vector, max ln.Vector) {
 		)
 		scene.Add(shape)
 	*/
-	// Build antenna
 
-	scene.Add(ln.NewTransformedShape(ln.NewCylinder(antenna_radius, 0, antenna_height), ln.Translate(ln.Vector{(max.X-min.X)/2.0 + min.X, (max.Y-min.Y)/2.0 + min.Y, max.Z + rt_height})))
+	// Build antenna
+	//	antenna_height := 0.5
+	//	antenna_radius := 0.03
+	//need_antenna := float32(0.7)
+
+	//if rand.Float32() <= need_antenna {
+	//scene.Add(ln.NewTransformedShape(ln.NewCylinder(antenna_radius, 0, antenna_height*(rand.Float64()+0.5)), ln.Translate(ln.Vector{(max.X-min.X)/2.0 + min.X, (max.Y-min.Y)/2.0 + min.Y, max.Z + rt_height})))
+	//}
+
+	//scene.Add(ln.NewTransformedShape(ln.NewCylinder(antenna_radius, 0, antenna_height), ln.Translate(ln.Vector{(max.X-min.X)/2.0 + min.X, (max.Y-min.Y)/2.0 + min.Y, max.Z + rt_height})))
 
 	// scene.Add(ln.Path{min, max})
 	// scene.Add(ln.Path{{(max.X-min.X)/2.0+min.X, (max.Y-min.Y)/2.0+min.Y, max.Z + rt_height}, {max.X-min.X)/2+min.X, (max.Y-min.Y)/2.0+min.Y, max.Z + rt_height+antenna_height}})
@@ -285,6 +296,8 @@ func main() {
 	area_max_y := 50.0
 	level_height := 1.0
 	globalHeight = 0
+	globalNbRooftops = 0
+	globalNbBlocks = 0
 
 	var seed int64
 	if len(os.Args[1:]) == 0 {
@@ -318,31 +331,34 @@ func main() {
 		up := ln.Vector{0, 0, 1} */
 
 	// A VIEW
-	eye_height := globalHeight + 2
+	eye_height := globalHeight + 6 // was 4
 	eye := ln.Vector{-20, -20, eye_height}
-	center := ln.Vector{45, 45, 5}
+	center := ln.Vector{40, 40, 0}
 	up := ln.Vector{0, 0, 1}
 
 	// define rendering parameters
-	width := 800.0   // rendered width
-	height := 1600.0 // rendered height
+	width := 960.0   // rendered width
+	height := 1392.0 // rendered height
 	fovy := 60.0     // vertical field of view, degrees
 	znear := 0.1     // near z plane
 	zfar := 100.0    // far z plane
-	step := 0.01     // how finely to chop the paths for visibility testing
+	step := 0.005    // how finely to chop the paths for visibility testing
 
 	start := time.Now()
 
 	paths := scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
 
-	var filename = "out2/city" + strconv.Itoa(int(seed)) + "_" + FloatToString(eye.X) + "_" + FloatToString(eye.Y) + "_" + FloatToString(eye.Z) + "_" + FloatToString(center.X) + "_" + FloatToString(center.Y) + "_" + FloatToString(center.Z) + "_" + FloatToString(width) + "_" + FloatToString(height) + "_A"
+	var filename = "/Users/gwen/Documents/Art/Axidraw/Skyscrapers/out/city" + strconv.Itoa(int(seed)) + "_" + FloatToString(eye.X) + "_" + FloatToString(eye.Y) + "_" + FloatToString(eye.Z) + "_" + FloatToString(center.X) + "_" + FloatToString(center.Y) + "_" + FloatToString(center.Z) + "_" + FloatToString(width) + "_" + FloatToString(height) + "_" + strconv.Itoa(globalNbBlocks) + "_" + strconv.Itoa(globalNbRooftops) + "_" + strconv.Itoa(len(paths)) + "_A"
 
 	paths.WriteToPNG(filename+".png", width, height)
 	paths.WriteToSVG(filename+".svg", width, height)
 	elapsed := time.Since(start)
 
 	println("A view generated.")
-	println("Duration=" + elapsed.String())
+	println("Duration= " + elapsed.String())
+	println("Number of blocks= " + strconv.Itoa(globalNbBlocks))
+	println("Number of rooftops= " + strconv.Itoa(globalNbRooftops))
+	println("Number of lines= " + strconv.Itoa(len(paths)))
 
 	// B VIEW
 	eye_height = 5.0 + globalHeight
@@ -351,18 +367,18 @@ func main() {
 	up = ln.Vector{0, 0, 1}
 
 	// define rendering parameters
-	width = 1024.0  // rendered width
-	height = 1024.0 // rendered height
-	fovy = 60.0     // vertical field of view, degrees
-	znear = 0.1     // near z plane
-	zfar = 100.0    // far z plane
-	step = 0.01     // how finely to chop the paths for visibility testing
+	width = 768.0  // rendered width
+	height = 932.0 // rendered height
+	fovy = 60.0    // vertical field of view, degrees
+	znear = 0.1    // near z plane
+	zfar = 100.0   // far z plane
+	step = 0.005   // how finely to chop the paths for visibility testing
 
 	start = time.Now()
 	paths = scene.Render(eye, center, up, width, height, fovy, znear, zfar, step)
 
 	//	paths := scene.Render(eye, center, up, width, height, 100, 0.1, 100, 0.01)
-	filename = "out2/city" + strconv.Itoa(int(seed)) + "_" + FloatToString(eye.X) + "_" + FloatToString(eye.Y) + "_" + FloatToString(eye.Z) + "_" + FloatToString(center.X) + "_" + FloatToString(center.Y) + "_" + FloatToString(center.Z) + "_" + FloatToString(width) + "_" + FloatToString(height) + "_B"
+	filename = "/Users/gwen/Documents/Art/Axidraw/Skyscrapers/out/city" + strconv.Itoa(int(seed)) + "_" + FloatToString(eye.X) + "_" + FloatToString(eye.Y) + "_" + FloatToString(eye.Z) + "_" + FloatToString(center.X) + "_" + FloatToString(center.Y) + "_" + FloatToString(center.Z) + "_" + FloatToString(width) + "_" + FloatToString(height) + "_" + strconv.Itoa(globalNbBlocks) + "_" + strconv.Itoa(globalNbRooftops) + "_" + strconv.Itoa(len(paths)) + "_B"
 
 	paths.WriteToPNG(filename+".png", width, height)
 	paths.WriteToSVG(filename+".svg", width, height)
