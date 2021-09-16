@@ -331,7 +331,7 @@ func main() {
 		up := ln.Vector{0, 0, 1} */
 
 	// A VIEW
-	eye_height := globalHeight + 6 // was 4
+	eye_height := globalHeight + 4 // was 4
 	eye := ln.Vector{-20, -20, eye_height}
 	center := ln.Vector{40, 40, 0}
 	up := ln.Vector{0, 0, 1}
